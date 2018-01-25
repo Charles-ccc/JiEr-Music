@@ -1,7 +1,7 @@
 <template>
   <div class="recommend">
     <div class="recommend-content">
-        <div class="slider-wrapper">
+        <div v-if="recommends.length" class="slider-wrapper">
             <slider>
                 <div v-for='(item, index) in recommends' :key="index">
                     <a :href="item.linkUrl">
@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import slider from '../../base/slider/slider'
+import Slider from '../../base/slider/slider'
 import {getRecommend} from '../../api/recommend'
 import {ERR_OK} from '../../api/config'
 export default {
@@ -29,7 +29,7 @@ export default {
         }
     },
     components: {
-        slider
+        Slider
     },
     created() {
         this._getRecommend()

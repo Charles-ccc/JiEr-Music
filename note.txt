@@ -1,0 +1,7 @@
+1.better-scroll 版本问题，在高版本中，如果想要无缝滚动，需要这样写
+    snap: {
+        loop:true,
+        snapLoop: this.loop,
+        snapThreshold: 0.3,
+        snapSpeed: 400
+    }
