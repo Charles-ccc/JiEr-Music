@@ -5,3 +5,19 @@
         snapThreshold: 0.3,
         snapSpeed: 400
     }
+
+2.QQ音乐数据请求接口在config/index.js中设置
+    资料地址： https://www.2cto.com/kf/201712/704822.html?utm_source=oschina-app
+    proxyTable: {
+        '/api/getDiscList': {
+            target: 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg',
+            bypass: function(req, res, proxyOptions) {
+                req.headers.referer = "https//c.y.qq.com";
+                req.headers.host = "c.y.qq.com";
+            },
+            pathRewrite: {
+                '^/api/getDiscList': ''
+            }
+        }
+    }
+    另外一种方法 https://www.imooc.com/wenda/detail/383369?t=271156

@@ -25,7 +25,7 @@ export default {
             type: Boolean,
             default: true
         },
-        autoplay: {
+        autoPlay: {
             type: Boolean,
             default: true
         },
@@ -45,10 +45,18 @@ export default {
                 this._play()
             }
         }, 20)
+
+        window.addEventListener('resize', () => {
+            if(!this.slider) {
+                return
+            }
+            this._setSliderWidth(true)
+            this.slider.refresh()
+        })
     },
     methods: {
         //计算并设置slider的宽度
-        _setSliderWidth() {
+        _setSliderWidth(isResize) {
             this.children = this.$refs.sliderGroup.children
             let width = 0
             let sliderWidth = this.$refs.slider.clientWidth
@@ -61,7 +69,7 @@ export default {
                 // slider-group 的width
                 width += sliderWidth
             }
-            if(this.loop) {
+            if(this.loop && !isResize) {
                 width += 2 * sliderWidth
             }
             this.$refs.sliderGroup.style.width = width + 'px'
@@ -107,6 +115,9 @@ export default {
                 //better-scroll 自身方法，第一个参数为x方向，第二个为y方向，第三个为跳转间隔
             }, this.interval);
         }
+    },
+    destroyed() {
+        clearTimeout(this.timer)
     }
 }
 </script>
