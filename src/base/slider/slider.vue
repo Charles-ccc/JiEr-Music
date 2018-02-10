@@ -31,7 +31,7 @@ export default {
         },
         interval: {
             type: Number,
-            default: 4000
+            default: 3000
         }
     },
     mounted() {
@@ -40,25 +40,23 @@ export default {
             this._setSliderWidth()
             this._initDots()
             this._initSlider()
-
             if(this.autoPlay){
                 this._play()
             }
         }, 20)
 
         window.addEventListener('resize', () => {
-            if(!this.slider) {
-                return
+            if(this.slider) {
+                this._setSliderWidth(true)
+                this.slider.refresh()
             }
-            this._setSliderWidth(true)
-            this.slider.refresh()
         })
     },
     methods: {
         //计算并设置slider的宽度
         _setSliderWidth(isResize) {
             this.children = this.$refs.sliderGroup.children
-            let width = 0
+            let totalWidth = 0
             let sliderWidth = this.$refs.slider.clientWidth
             for(let i=0; i<this.children.length; i++) {
                 let child = this.children[i]
@@ -66,13 +64,13 @@ export default {
                 addClass(child, 'slider-item')
                 // 每个child 的宽度等于父容器的宽度
                 child.style.width = sliderWidth + 'px'
-                // slider-group 的width
-                width += sliderWidth
+                // slider-group 的totalWidth
+                totalWidth += sliderWidth
             }
             if(this.loop && !isResize) {
-                width += 2 * sliderWidth
+                totalWidth += 2 * sliderWidth
             }
-            this.$refs.sliderGroup.style.width = width + 'px'
+            this.$refs.sliderGroup.style.width = totalWidth + 'px'
         },
         _initDots() {
             this.dots = new Array(this.children.length)
@@ -92,11 +90,13 @@ export default {
             })
             //better-scroll 在滚动完毕时会派发一个 scrollEnd 事件
             this.slider.on('scrollEnd', () => {
+                // 获得当前轮播图的索引页数
                 let pageIndex = this.slider.getCurrentPage().pageX
                 //高版本不需要下面
                 // if(this.loop) {
                 //     pageIndex -= 1
                 // }
+                // 更新圆点索引
                 this.currentPageIndex = pageIndex
 
                 if(this.autoPlay) {
@@ -107,11 +107,9 @@ export default {
         },
         _play() {
             let pageIndex = this.currentPageIndex + 1
-            // if(this.loop) {
-            //     pageIndex += 1
-            // }
             this.timer = setTimeout(() => {
-                this.slider.goToPage(pageIndex, 0, 400)
+                this.slider.next();
+                // this.slider.goToPage(pageIndex, 0, 400)
                 //better-scroll 自身方法，第一个参数为x方向，第二个为y方向，第三个为跳转间隔
             }, this.interval);
         }

@@ -3,6 +3,7 @@
     <scroll ref="scroll" class="recommend-content" :data="discList">
         <div>
         <div v-if="recommends.length" class="slider-wrapper">
+            <!-- 当 recommends.length为true时，为了确保slot插槽内有数据，再执行slider.vue mounted"  -->
             <slider>
                 <div v-for='(item, index) in recommends' :key="index">
                     <a :href="item.linkUrl">
@@ -16,7 +17,7 @@
             <ul>
                 <li v-for="(item,index) in discList" :key="index" class="item">
                     <div class="icon">
-                        <img :src="item.imgurl" width="60" height="60">
+                        <img v-lazy="item.imgurl" width="60" height="60">
                     </div>
                     <div class="text">
                         <h2 class="name" v-html="item.creator.name"></h2>
@@ -25,6 +26,9 @@
                 </li>
             </ul>
         </div>
+        </div>
+        <div class="loading-container" v-show="!discList.length">
+            <loading></loading>
         </div>
     </scroll>
   </div>
@@ -35,6 +39,8 @@ import Slider from '../../base/slider/slider'
 import {getRecommend, getDiscList} from '../../api/recommend'
 import {ERR_OK} from '../../api/config'
 import Scroll from '../../base/scroll/scroll'
+import Loading from '../../base/loading/loading'
+
 export default {
     data() {
         return {
@@ -44,11 +50,16 @@ export default {
     },
     components: {
         Slider,
-        Scroll
+        Scroll,
+        Loading
     },
     created() {
         this._getRecommend()
-        this._getDiscList()
+        //模拟慢网速时，显示loading效果
+        setTimeout(()=>{
+            this._getDiscList()
+        },500)
+        
     },
     methods: {
         _getRecommend() {
