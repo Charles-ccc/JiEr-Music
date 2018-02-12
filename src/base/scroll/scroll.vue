@@ -26,6 +26,7 @@ export default {
             this._initSrcoll()
         }, 20)
     },
+    //this.scroll 指向 better-scroll实例
     methods: {
         _initSrcoll() {
             if( !this.$refs.wrapper ) {
@@ -44,6 +45,12 @@ export default {
         },
         refresh() {
             this.scroll && this.scroll.refresh()
+        },
+        scrollTo() {
+            this.scroll && this.scroll.scrollTo.apply(this.scroll,arguments)
+        },
+        scrollToElement() {
+            this.scroll && this.scroll.scrollToElement.apply(this.scroll,arguments)
         }
     },
     watch: {

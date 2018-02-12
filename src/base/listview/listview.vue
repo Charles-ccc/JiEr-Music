@@ -1,7 +1,7 @@
 <template>
-    <scroll class="listview" :data="data">
+    <scroll class="listview" :data="data" ref="listview">
         <ul>
-            <li v-for="(group, index) in data" :key="index" class="list-group">
+            <li v-for="(group, index) in data" :key="index" ref="listGroup" class="list-group">
                 <h2 class="list-group-title">{{ group.title }}</h2>
                 <ul>
                     <li v-for="(item, index) in group.items" :key="index" class="list-group-item">
@@ -11,11 +11,20 @@
                 </ul>
             </li>
         </ul>
+        <div class="list-shortcut" @touchstart="onShortcutTouchStart" @touchmove.stop.prevent="onShortcutTouchMove">
+            <ul>
+                <li v-for="(item, index) in shortcutList" :key="index" :data-index="index" class="item">
+                    {{item}}
+                </li>
+            </ul>
+        </div>
     </scroll>
 </template>
 
 <script>
-import Scroll from '../../base/scroll/scroll'
+import Scroll from '../scroll/scroll'
+import Loading from '../loading/loading'
+import {getData} from '../../common/js/dom'
 export default {
     name: 'listview',
     props: {
@@ -25,7 +34,26 @@ export default {
         }
     },
     components: {
-        Scroll
+        Scroll,
+        Loading
+    },
+    computed: {
+        shortcutList() {
+            //console.log(this.data)
+            return this.data.map((group) => {
+                //substr(start,length) 在字符串中抽取从 start 下标开始的指定数目的字符
+                return group.title.substr(0,1)
+            })
+        }
+    },
+    methods: {
+        onShortcutTouchStart(e) {
+            let anchorIndex = getData(e.target, 'index')
+                this.$refs.listview.scrollToElement(this.$refs.listGroup[anchorIndex],0)
+        },
+        onShortcutTouchMove(e) {
+            
+        }
     }
 }
 </script>
