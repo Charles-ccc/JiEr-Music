@@ -1,5 +1,11 @@
 <template>
-    <scroll class="listview" :data="data" ref="listview">
+    <scroll class="listview"
+            :data="data"
+            ref="listview" 
+            :listenScroll="listenScroll"
+            @scroll="scroll"
+            :probeType="probeType"
+    >
         <ul>
             <li v-for="(group, index) in data" :key="index" ref="listGroup" class="list-group">
                 <h2 class="list-group-title">{{ group.title }}</h2>
@@ -13,7 +19,13 @@
         </ul>
         <div class="list-shortcut" @touchstart="onShortcutTouchStart" @touchmove.stop.prevent="onShortcutTouchMove">
             <ul>
-                <li v-for="(item, index) in shortcutList" :key="index" :data-index="index" class="item">
+                <!-- 给索引添加一个index -->
+                <li v-for="(item, index) in shortcutList" 
+                    :key="index" 
+                    :data-index="index" 
+                    class="item" 
+                    :class="{'current': currentIndex === index}"
+                >
                     {{item}}
                 </li>
             </ul>
@@ -25,8 +37,25 @@
 import Scroll from '../scroll/scroll'
 import Loading from '../loading/loading'
 import {getData} from '../../common/js/dom'
+
+const ANCHOR_HEIGHT = 18;
+
 export default {
     name: 'listview',
+    created() {
+        this.touch = {}
+        this.listenScroll = true
+        this.listHeight = []
+        this.probeType = 3
+    },
+    data() {
+        return {
+            //观测实时滚动的位置
+            scrollY: -1,
+            //高亮
+            currentIndex: 0
+        }
+    },
     props: {
         data: {
             type:Array,
@@ -48,11 +77,69 @@ export default {
     },
     methods: {
         onShortcutTouchStart(e) {
+            //getData()在dom.js中，进行了封装
             let anchorIndex = getData(e.target, 'index')
-                this.$refs.listview.scrollToElement(this.$refs.listGroup[anchorIndex],0)
+            // 获取手指触碰的位置
+            let firstTouch = e.touches[0]
+            this.touch.y1 = firstTouch.pageY
+            // 记录当前点击的是第几个索引
+            this.touch.anchorIndex = anchorIndex
+            //scrollToElement()在scroll.vue中进行了处理
+            //this.$refs.listview.scrollToElement(this.$refs.listGroup[anchorIndex],0)
+            this._scrollTo(anchorIndex)
         },
         onShortcutTouchMove(e) {
-            
+            let firstTouch = e.touches[0]
+            this.touch.y2 = firstTouch.pageY
+            // 记录滑动了几个锚点
+            let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0
+            let anchorIndex = parseInt(this.touch.anchorIndex) + delta
+            console.log(anchorIndex)
+            this._scrollTo(anchorIndex)
+        },
+        scroll(pos) {
+            this.scrollY = pos.y
+        },
+        _scrollTo(index) {
+            this.scrollY = -this.listHeight[index]
+            console.log(this.listHeight[index])
+            //scrollToElement() 第二个参数规定是否需要动画
+            this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)
+        },
+        //计算每个group的高度
+        _calculateHeight() {
+            this.listHeight = []
+            const list = this.$refs.listGroup
+            let height = 0
+            this.listHeight.push(height)
+            for(var i = 0; i < list.length; i++) {
+                let item = list[i]
+                height += item.clientHeight
+                this.listHeight.push(height)
+            }
+            console.log(this.listHeight)
+        }
+    },
+    watch: {
+        // 检测data变化
+        data() {
+            //延时做兼容性
+            setTimeout( () => {
+                this._calculateHeight()
+            }, 20)
+        },
+        scrollY(newY) {
+            const listHeight = this.listHeight
+            for(let i = 0; i<listHeight.length; i++){
+                let height1 = listHeight[i]
+                let height2 = listHeight[i + 1]
+                if(!height2 || (-newY >height1 && -newY<height2) ){
+                    this.currentIndex = i
+                    //console.log(this.currentIndex)
+                    return
+                }
+            }
+            this.currentIndex = 0
         }
     }
 }
