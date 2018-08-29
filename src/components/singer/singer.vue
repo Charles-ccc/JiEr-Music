@@ -75,6 +75,7 @@ export default {
       for(let key in map) {
         let val = map[key]
         if(val.title.match(/[a-zA-Z]/)) {
+          //console.log(val.title)
           ret.push(val)
         } else {
           hot.push(val)
