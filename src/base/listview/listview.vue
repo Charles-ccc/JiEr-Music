@@ -10,7 +10,7 @@
             <li v-for="(group, index) in data" :key="index" ref="listGroup" class="list-group">
                 <h2 class="list-group-title">{{ group.title }}</h2>
                 <ul>
-                    <li v-for="(item, index) in group.items" :key="index" class="list-group-item">
+                    <li v-for="(item, index) in group.items" @click="selectItem(item)" :key="index" class="list-group-item">
                         <img class="avatar" v-lazy="item.avatar" alt="头像">
                         <span class="name">{{ item.name }}</span>
                     </li>
@@ -24,11 +24,17 @@
                     :key="index" 
                     :data-index="index" 
                     class="item" 
-                    :class="{'current': currentIndex === index}"
+                    :class="{'current': currentIndex===index}"
                 >
                     {{item}}
                 </li>
             </ul>
+        </div>
+        <div class="list-fixed" v-show="fixedTitle" ref="fixed">
+            <h1 class="fixed-title">{{fixedTitle}}</h1>
+        </div>
+        <div v-show="!data.length" class="loading-container">
+            <loading></loading>
         </div>
     </scroll>
 </template>
@@ -38,7 +44,8 @@ import Scroll from '../scroll/scroll'
 import Loading from '../loading/loading'
 import {getData} from '../../common/js/dom'
 
-const ANCHOR_HEIGHT = 18;
+const ANCHOR_HEIGHT = 18
+const TITLE_HEIGHT = 30
 
 export default {
     name: 'listview',
@@ -53,7 +60,9 @@ export default {
             //观测实时滚动的位置
             scrollY: -1,
             //高亮
-            currentIndex: 0
+            currentIndex: 0,
+            // 列表title和固定title的差值
+            diff: -1
         }
     },
     props: {
@@ -73,9 +82,18 @@ export default {
                 //substr(start,length) 在字符串中抽取从 start 下标开始的指定数目的字符
                 return group.title.substr(0,1)
             })
+        },
+        fixedTitle() {
+            if(this.scrollY > 0){
+                return ''
+            }
+            return this.data[this.currentIndex] ? this.data[this.currentIndex].title : ''
         }
     },
     methods: {
+        selectItem(item) {
+            this.$emit('select', item)
+        },
         onShortcutTouchStart(e) {
             //getData()在dom.js中，进行了封装
             let anchorIndex = getData(e.target, 'index')
@@ -84,8 +102,8 @@ export default {
             this.touch.y1 = firstTouch.pageY
             // 记录当前点击的是第几个索引
             this.touch.anchorIndex = anchorIndex
-            //scrollToElement()在scroll.vue中进行了处理
-            //this.$refs.listview.scrollToElement(this.$refs.listGroup[anchorIndex],0)
+            // scrollToElement()在scroll.vue中进行了处理
+            // this.$refs.listview.scrollToElement(this.$refs.listGroup[anchorIndex],0)
             this._scrollTo(anchorIndex)
         },
         onShortcutTouchMove(e) {
@@ -94,15 +112,22 @@ export default {
             // 记录滑动了几个锚点
             let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0
             let anchorIndex = parseInt(this.touch.anchorIndex) + delta
-            console.log(anchorIndex)
             this._scrollTo(anchorIndex)
         },
         scroll(pos) {
             this.scrollY = pos.y
         },
         _scrollTo(index) {
+            // 对边界进行处理
+            if(!index && index !==0) {
+                return
+            }
+            if(index < 0){
+                index =0
+            }else if(index > this.listHeight -2){
+                index = this.listHeight -2
+            }
             this.scrollY = -this.listHeight[index]
-            console.log(this.listHeight[index])
             //scrollToElement() 第二个参数规定是否需要动画
             this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)
         },
@@ -117,7 +142,6 @@ export default {
                 height += item.clientHeight
                 this.listHeight.push(height)
             }
-            console.log(this.listHeight)
         }
     },
     watch: {
@@ -130,16 +154,31 @@ export default {
         },
         scrollY(newY) {
             const listHeight = this.listHeight
+            // 当滚动的顶部，newY>0
+            if(newY > 0) {
+                this.currentIndex = 0
+                return
+            }
+            // 在中间部分滚动
             for(let i = 0; i<listHeight.length; i++){
                 let height1 = listHeight[i]
                 let height2 = listHeight[i + 1]
-                if(!height2 || (-newY >height1 && -newY<height2) ){
+                if(-newY >= height1 && -newY < height2){
                     this.currentIndex = i
-                    //console.log(this.currentIndex)
+                    this.diff = height2 + newY
                     return
                 }
             }
-            this.currentIndex = 0
+            // 当滚动到底部，且-newY大于最后一个元素的上限
+            this.currentIndex = listHeight.length - 2
+        },
+        diff(newVal) {
+            let fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT) ? newVal-TITLE_HEIGHT : 0
+            if(this.fixedTop === fixedTop) {
+                return
+            }
+            this.fixedTop = fixedTop
+            this.$refs.fixed.style.transform = `translate3d(0, ${fixedTop}px, 0)`
         }
     }
 }
