@@ -1,6 +1,6 @@
+// 需要传递的数据
 const state = {
-    singer: {
-    }
+    singer: {}
 }
 
 export default state

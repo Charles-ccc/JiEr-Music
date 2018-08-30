@@ -27,11 +27,11 @@ export function getDiscList() {
         rnd: Math.random(),
         format: 'json'
     })
-    
+
     return axios.get(url, {
         params: data
-    }).then( res => {
-        console.log(res.data);
+    }).then(res => {
+        //  console.log(res.data);
         return Promise.resolve(res.data)
     })
 }
