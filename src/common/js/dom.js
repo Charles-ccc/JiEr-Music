@@ -16,9 +16,9 @@ export function addClass(el, className) {
 }
 
 export function getData(el, name, val) {
-    const prefix ='data-'
-    name = prefix+ name
-    if(val) {
+    const prefix = 'data-'
+    name = prefix + name
+    if (val) {
         return el.setAttribute(name, val)
     } else {
         return el.getAttribute(name)
@@ -26,3 +26,32 @@ export function getData(el, name, val) {
 }
 
 
+
+let elementStyle = document.createElement('div').style
+    // 先查看elementStyle支持哪些特性
+let vendor = (() => {
+    let transformNames = {
+            webKit: 'webkitTransform',
+            Moz: 'MozTransform',
+            o: 'OTransform',
+            ms: 'msTransform',
+            standard: 'transform'
+        }
+        // 判断是哪个浏览器
+    for (let key in transformNames) {
+        if (elementStyle[transformNames[key]] !== undefined) {
+            return key
+        }
+    }
+    return false
+})()
+
+export function prefixStyle(style) {
+    if (vendor === false) {
+        return false
+    }
+    if (vendor === 'standard') {
+        return style
+    }
+    return vendor + style.charAt(0).toUpperCase() + style.substr(1)
+}
