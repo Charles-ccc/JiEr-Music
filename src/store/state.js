@@ -1,6 +1,14 @@
-// 需要传递的数据
+import {playMode} from '../common/js/config'
+
+// 定义需要传递的原始数据
 const state = {
-    singer: {}
+    singer: {}, // 歌手
+    playing: false, // 播放状态
+    fullScreen: false, // 播放全屏
+    playlist: [], // 播放列表
+    sequenceList: [], //顺序播放列表
+    mode: playMode.sequence,
+    currentIndex: -1 // 当前播放索引
 }
 
 export default state
