@@ -120,3 +120,6 @@ export const options = {
 
 export const ERR_OK = 0
 ```
+
+vuex报错 `[vuex] Do not mutate vuex store state outside mutation handlers` 
+可能问题出在了 actions.js 的 payload，在这的 list 是一个数组，是一个引用类型，所以就有可能在 vuex 之外的地方改变了 list。那么就有可能 this._committing 的值就不会变为 true， 所以就会报这个错。

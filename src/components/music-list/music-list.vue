@@ -22,7 +22,7 @@
             class="list"
             ref="list">
             <div class="song-list-wrapper">
-                <song-list :songs="songs"></song-list>
+                <song-list :songs="songs" @select="selectItem"></song-list>
             </div>
             <div class="loading-container" v-show="!songs.length">
                 <loading></loading>
@@ -36,6 +36,7 @@ import Scroll from "../../base/scroll/scroll"
 import SongList from "../../base/song-list/song-list"
 import Loading from "../../base/loading/loading"
 import {prefixStyle} from "../../common/js/dom"
+import {mapActions} from "vuex"
 
 const RESERVED_HEIGHT = 40  // 歌手姓名和返回按钮高度
 
@@ -79,8 +80,18 @@ export default {
         },
         back() {
             this.$router.back()
-        }
-
+        },
+        selectItem(item, index) {
+            // 从...mapActions获取selectPlay
+            this.selectPlay({
+                // 播放整个列表
+                list: this.songs,
+                index
+            })
+        },
+        ...mapActions([
+            'selectPlay'  
+        ])
     },
     mounted() {
         this.imageHeight = this.$refs.bgImage.clientHeight

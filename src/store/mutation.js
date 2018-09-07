@@ -14,11 +14,15 @@ const mutation = {
     [types.SET_FULL_SCREEN](state, flag) {
         state.fullScreen = flag
     },
-    [types.SET_PLAYING_STATE](state, list) {
-        state.playlist = list
+    [types.SET_PLAYLIST](state, list) {
+        // state.playlist = JSON.parse(JSON.stringify(list))
+        state.playlist = Object.assign([], list)
+            // state.playlist = list
     },
     [types.SET_SEQUENCE_LIST](state, list) {
-        state.sequenceList = list
+        // state.sequenceList = JSON.parse(JSON.stringify(list))
+        state.sequenceList = Object.assign([], list)
+            // state.sequenceList = list
     },
     [types.SET_PLAY_MODE](state, mode) {
         state.mode = mode
