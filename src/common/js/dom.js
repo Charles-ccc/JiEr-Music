@@ -31,13 +31,13 @@ let elementStyle = document.createElement('div').style
     // 先查看elementStyle支持哪些特性
 let vendor = (() => {
     let transformNames = {
-            webKit: 'webkitTransform',
-            Moz: 'MozTransform',
-            o: 'OTransform',
-            ms: 'msTransform',
-            standard: 'transform'
-        }
-        // 判断是哪个浏览器
+        webkit: 'webkitTransform',
+        Moz: 'MozTransform',
+        O: 'OTransform',
+        ms: 'msTransform',
+        standard: 'transform'
+    }
+
     for (let key in transformNames) {
         if (elementStyle[transformNames[key]] !== undefined) {
             return key
@@ -50,6 +50,7 @@ export function prefixStyle(style) {
     if (vendor === false) {
         return false
     }
+
     if (vendor === 'standard') {
         return style
     }
