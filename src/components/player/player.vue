@@ -68,7 +68,9 @@
             <i @click.stop="togglePlaying" :class="miniIcon"></i>
           </div>
           <div class="control">
-            <i class="icon-playlist"></i>
+            <progress-circle>
+              <i class="icon-playlist"></i>
+            </progress-circle>
           </div>
         </div>
       </transition>
@@ -82,7 +84,7 @@
     import animations from 'create-keyframe-animation'
     import {prefixStyle} from '../../common/js/dom'
     import ProgressBar from "../../base/progress-bar/progress-bar"
-
+    import ProgressCircle from "../../base/progress-circle/progress-circle"
     const transform = prefixStyle('transform')
     export default {
       data() {
@@ -92,7 +94,8 @@
         }
       },
       components: {
-        ProgressBar
+        ProgressBar,
+        ProgressCircle
       },
       computed: {
         playIcon() {
