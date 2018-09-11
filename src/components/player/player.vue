@@ -27,6 +27,13 @@
             </div>
           </div>
           <div class="bottom">
+            <div class="progress-wrapper">
+              <span class="time time-l">{{format(currentTime)}}</span>
+              <div class="progress-bar-wrapper">
+                <progress-bar :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
+              </div>
+              <span class="time time-r">{{format(currentSong.duration)}}</span>
+            </div>
             <div class="operators">
               <div class="icon i-left">
                 <i class="icon-sequence"></i>
@@ -65,7 +72,8 @@
           </div>
         </div>
       </transition>
-      <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error"></audio>
+      <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
+      <!-- oncanplay  onerror  ontimeupdate 是audio标签本身的事件属性-->
     </div>
 </template>
 
@@ -73,13 +81,18 @@
     import {mapGetters, mapMutations} from 'vuex'
     import animations from 'create-keyframe-animation'
     import {prefixStyle} from '../../common/js/dom'
-    
+    import ProgressBar from "../../base/progress-bar/progress-bar"
+
     const transform = prefixStyle('transform')
     export default {
       data() {
         return {
-          songReady: false
+          songReady: false,
+          currentTime: 0
         }
+      },
+      components: {
+        ProgressBar
       },
       computed: {
         playIcon() {
@@ -102,6 +115,10 @@
         // 为加载完成时，不允许点击
         disableCls() {
           return this.songReady ? '' : 'disable'
+        },
+        percent() {
+          // 获取歌曲播放时间和歌曲总时长的比例
+          return this.currentTime / this.currentSong.duration
         }
       },
       watch: {
@@ -230,10 +247,37 @@
         },
         error() {
           this.songReady = true
+        },
+        updateTime(e) {
+          // 将audio标签表示当前播放时间的currentTime属性（可读写）赋值给data中的currentTime
+          this.currentTime = e.target.currentTime
+        },
+        format(interval) {
+          // 将currentTime的时间戳格式改为分秒格式
+          interval = interval | 0    // (| 0) 表示向下取整，相当于调用Math.floor
+          const minute = interval / 60 | 0
+          const second = this._pad(interval % 60)
+          return `${minute}:${second}`
+        },
+        // 给时间的秒补零
+        _pad(num, n=2) {
+          let len = num.toString().length
+          while(len < n) {
+            num  = '0' + num
+            len ++
+          }
+          return num
+        },
+        onProgressBarChange(percent) {
+          this.$refs.audio.currentTime = this.currentSong.duration * percent
+          // 拖动后播放
+          if(!this.playing) {
+            this.togglePlaying()
+          }
         }
       }
     }
-    </script>
+</script>
 
 <style lang="stylus" scoped>
     @import "../../common/stylus/variable"
