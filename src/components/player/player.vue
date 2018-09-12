@@ -86,6 +86,7 @@
     import ProgressBar from "../../base/progress-bar/progress-bar"
     import ProgressCircle from "../../base/progress-circle/progress-circle"
     import {playMode} from "../../common/js/config"
+    import {shuffle} from "../../common/js/util"
 
     const transform = prefixStyle('transform')
     export default {
@@ -121,7 +122,9 @@
             'currentSong',
             'playing',
             'currentIndex',
-            'mode'
+            'mode',
+            'sequenceList'
+
         ]),
         // 为加载完成时，不允许点击
         disableCls() {
@@ -133,7 +136,11 @@
         }
       },
       watch: {
-        currentSong() {
+        currentSong(newSong, oldSong) {
+          if(newSong.id === oldSong.id) {
+            // 为了解决暂停状态切换播放列表，歌曲自动播放
+            return
+          }
           this.$nextTick(() => {
             this.$refs.audio.play()
           })
@@ -151,7 +158,8 @@
           setFullScreen: 'SET_FULL_SCREEN',
           setPlayingState: 'SET_PLAYING_STATE',
           setCurrentIndex: 'SET_CURRENT_INDEX',
-          setPlayMode: 'SET_PLAY_MODE'
+          setPlayMode: 'SET_PLAY_MODE',
+          setPlayList: 'SET_PLAYLIST'
         }),
         back() {
           this.setFullScreen(false)
@@ -292,6 +300,23 @@
           const mode = (this.mode + 1) % 3
           // 利用类似函数调用的方式改变state里的mode
           this.setPlayMode(mode)
+
+          let list = null
+          if(mode === playMode.random) {
+            list = shuffle(this.sequenceList)
+          } else {
+            list = this.sequenceList
+          }
+          this.resetCurrentIndex(list)
+          this.setPlayList(list)
+        },
+        resetCurrentIndex(list) {
+        // 当播放模式发生改变时，重置currentIndex,不改变当前的currentSong
+          let index = list.findIndex((item) => {
+            return item.id === this.currentSong.id
+          })
+          // 拿到当前播放歌曲的索引，然后传递给vuex
+          this.setCurrentIndex(index)
         }
       }
     }

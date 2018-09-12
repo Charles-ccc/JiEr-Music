@@ -1,6 +1,6 @@
 <template>
   <div id="rank">
-    Rank
+    This is RankPages
   </div>
 </template>
 

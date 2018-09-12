@@ -1,6 +1,6 @@
 <template>
   <div id="search">
-    Search
+    This is SearchPages
   </div>
 </template>
 
