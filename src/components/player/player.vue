@@ -35,8 +35,8 @@
               <span class="time time-r">{{format(currentSong.duration)}}</span>
             </div>
             <div class="operators">
-              <div class="icon i-left">
-                <i class="icon-sequence"></i>
+              <div class="icon i-left" @click="changeMode">
+                <i :class="iconMode"></i>
               </div>
               <div class="icon i-left">
                 <i @click="prev" class="icon-prev" :class="disableCls"></i>
@@ -65,12 +65,12 @@
             <p class="desc" v-html="currentSong.singer"></p>
           </div>
           <div class="control">
-            <i @click.stop="togglePlaying" :class="miniIcon"></i>
+            <progress-circle :radius="radius" :percent="percent">
+              <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
+            </progress-circle>
           </div>
           <div class="control">
-            <progress-circle>
-              <i class="icon-playlist"></i>
-            </progress-circle>
+            <i class="icon-playlist"></i>
           </div>
         </div>
       </transition>
@@ -85,12 +85,15 @@
     import {prefixStyle} from '../../common/js/dom'
     import ProgressBar from "../../base/progress-bar/progress-bar"
     import ProgressCircle from "../../base/progress-circle/progress-circle"
+    import {playMode} from "../../common/js/config"
+
     const transform = prefixStyle('transform')
     export default {
       data() {
         return {
           songReady: false,
-          currentTime: 0
+          currentTime: 0,
+          radius: 32
         }
       },
       components: {
@@ -107,13 +110,18 @@
         cdCls() {
           return this.playing ? 'play' : 'play pause'
         },
+        iconMode() {
+          // 判断是哪一种播放模式
+          return this.mode === playMode.sequence ? 'icon-sequence' : this.mode === playMode.loop ? 'icon-loop' : 'icon-random'
+        },
         ...mapGetters([
           // 从state中获取当前状态和数据
             'fullScreen',
             'playlist',
             'currentSong',
             'playing',
-            'currentIndex'
+            'currentIndex',
+            'mode'
         ]),
         // 为加载完成时，不允许点击
         disableCls() {
@@ -139,9 +147,11 @@
       },
       methods: {
         ...mapMutations({
+          // 修改vuex的状态和数据
           setFullScreen: 'SET_FULL_SCREEN',
           setPlayingState: 'SET_PLAYING_STATE',
-          setCurrentIndex: 'SET_CURRENT_INDEX'
+          setCurrentIndex: 'SET_CURRENT_INDEX',
+          setPlayMode: 'SET_PLAY_MODE'
         }),
         back() {
           this.setFullScreen(false)
@@ -277,6 +287,11 @@
           if(!this.playing) {
             this.togglePlaying()
           }
+        },
+        changeMode() {
+          const mode = (this.mode + 1) % 3
+          // 利用类似函数调用的方式改变state里的mode
+          this.setPlayMode(mode)
         }
       }
     }
