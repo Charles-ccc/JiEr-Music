@@ -72,7 +72,11 @@
                 this.$emit('percentChange', percent)
             },
             progressClick(e) {
-                this._offset(e.offsetX)
+                // this._offset(e.offsetX) // 点击小圆时，e.offsetX计算出错
+                const rect = this.$refs.progressBar.getBoundingClientRect()
+                // getBoundingClientRect用于获取某个元素相对于视窗的位置集合。集合中有top, right, bottom, left等属性。
+                const offsetWidth = e.pageX - rect.left
+                this._offset(offsetWidth)
                 this._triggerPercent()
             }
         }

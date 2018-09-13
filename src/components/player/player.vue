@@ -74,8 +74,13 @@
           </div>
         </div>
       </transition>
-      <audio ref="audio" :src="currentSong.url" @canplay="ready" @error="error" @timeupdate="updateTime"></audio>
-      <!-- oncanplay  onerror  ontimeupdate 是audio标签本身的事件属性-->
+      <audio ref="audio" 
+            :src="currentSong.url" 
+            @canplay="ready" 
+            @error="error" 
+            @timeupdate="updateTime"
+            @ended="end"></audio>
+      <!-- oncanplay  onerror  ontimeupdate ended是audio标签本身的事件属性-->
     </div>
 </template>
 
@@ -87,6 +92,7 @@
     import ProgressCircle from "../../base/progress-circle/progress-circle"
     import {playMode} from "../../common/js/config"
     import {shuffle} from "../../common/js/util"
+    import Lyric from 'lyric-parser'
 
     const transform = prefixStyle('transform')
     export default {
@@ -94,7 +100,8 @@
         return {
           songReady: false,
           currentTime: 0,
-          radius: 32
+          radius: 32,
+          currentLyric: null
         }
       },
       components: {
@@ -143,6 +150,7 @@
           }
           this.$nextTick(() => {
             this.$refs.audio.play()
+            this.getLyric()
           })
         },
         playing(newPlaying) {
@@ -150,7 +158,7 @@
           this.$nextTick(() => {
             newPlaying ? audio.play() : audio.pause()
           })
-        }
+        },
       },
       methods: {
         ...mapMutations({
@@ -263,6 +271,18 @@
           }
           this.songReady = false
         },
+        end() {
+          // 判断按哪种模式播放，播放结束后调用不同方法
+          if(this.mode === playMode.loop) {
+            this.loop()
+          } else {
+            this.next()
+          }
+        },
+        loop() {
+          this.$refs.audio.currentTime = 0
+          this.$refs.audio.play()
+        },
         ready() {
           this.songReady = true
         },
@@ -317,6 +337,12 @@
           })
           // 拿到当前播放歌曲的索引，然后传递给vuex
           this.setCurrentIndex(index)
+        },
+        getLyric() {
+          this.currentSong.getLyric().then((lyric) => {
+            this.currentLyric = new Lyric(lyric)
+            console.log(this.currentLyric)
+          })
         }
       }
     }
