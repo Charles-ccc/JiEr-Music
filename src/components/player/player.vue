@@ -25,6 +25,19 @@
                 </div>
               </div>
             </div>
+            <scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
+              <div class="lyric-wrapper">
+                <div v-if="currentLyric">
+                  <p ref="lyricLine" 
+                     class="text"
+                     :class="{'current':currentLineNum === index}"
+                     v-for="(line, index) in currentLyric.lines" 
+                     :key="index">
+                     {{line.txt}}
+                  </p>
+                </div>
+              </div>
+            </scroll>
           </div>
           <div class="bottom">
             <div class="progress-wrapper">
@@ -93,7 +106,7 @@
     import {playMode} from "../../common/js/config"
     import {shuffle} from "../../common/js/util"
     import Lyric from 'lyric-parser'
-
+    import Scroll from '../../base/scroll/scroll'
     const transform = prefixStyle('transform')
     export default {
       data() {
@@ -101,12 +114,14 @@
           songReady: false,
           currentTime: 0,
           radius: 32,
-          currentLyric: null
+          currentLyric: null,
+          currentLineNum:0
         }
       },
       components: {
         ProgressBar,
-        ProgressCircle
+        ProgressCircle,
+        Scroll
       },
       computed: {
         playIcon() {
@@ -340,9 +355,16 @@
         },
         getLyric() {
           this.currentSong.getLyric().then((lyric) => {
-            this.currentLyric = new Lyric(lyric)
-            console.log(this.currentLyric)
+            this.currentLyric = new Lyric(lyric, this.handleLyric)
+              if(this.playing) {
+                this.currentLyric.play() // lyric-parser插件的api方法
+              }
+              console.log(this.currentLyric.lines)
           })
+        },
+        // 当每一行歌词发生改变的时候，进行回调
+        handleLyric({lineNum, txt}) {
+          this.currentLineNum = lineNum
         }
       }
     }
