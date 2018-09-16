@@ -359,12 +359,18 @@
               if(this.playing) {
                 this.currentLyric.play() // lyric-parser插件的api方法
               }
-              console.log(this.currentLyric.lines)
+              // console.log(this.currentLyric.lines)
           })
         },
         // 当每一行歌词发生改变的时候，进行回调
         handleLyric({lineNum, txt}) {
           this.currentLineNum = lineNum
+          if(lineNum > 5) {
+            let lineEl = this.$refs.lyricLine[lineNum - 5]
+            this.$refs.lyricList.scrollToElement(lineEl, 1000)
+          } else {
+            this.$refs.lyricList.scrollTo(0,0,1000)
+          }
         }
       }
     }
