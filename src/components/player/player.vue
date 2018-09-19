@@ -21,7 +21,7 @@
                @touchstart.prevent="middleTouchStart"
                @touchmove.prevent="middleTouchMove"
                @touchend.prevent="middleTouchEnd">
-            <div class="middle-l">
+            <div class="middle-l" ref="middleL">
               <div class="cd-wrapper" ref="cdWrapper">
                 <div class="cd" :class="cdCls">
                   <img class="image" :src="currentSong.image">
@@ -115,6 +115,7 @@
     import Lyric from 'lyric-parser'
     import Scroll from '../../base/scroll/scroll'
     const transform = prefixStyle('transform')
+    const transitionDuration = prefixStyle('transitionDuration')
     export default {
       data() {
         return {
@@ -173,6 +174,9 @@
           if(newSong.id === oldSong.id) {
             // 为了解决暂停状态切换播放列表，歌曲自动播放
             return
+          }
+          if(this.currentLyric) {
+            this.currentLyric.stop()
           }
           this.$nextTick(() => {
             this.$refs.audio.play()
@@ -265,6 +269,9 @@
           if (!this.songReady) {
             return
           }
+          if(this.currentLyric) {
+            this.currentLyric.togglePlay()
+          }
           this.setPlayingState(!this.playing)
         },
         prev() {
@@ -308,6 +315,9 @@
         loop() {
           this.$refs.audio.currentTime = 0
           this.$refs.audio.play()
+          if(this.currentLyric) {
+            this.currentLyric.seek() // 歌词回到初始化
+          }
         },
         ready() {
           this.songReady = true
@@ -335,13 +345,19 @@
           }
           return num
         },
+        // 拖动进度条
         onProgressBarChange(percent) {
-          this.$refs.audio.currentTime = this.currentSong.duration * percent
+          const currentTime = this.currentSong.duration * percent
+          this.$refs.audio.currentTime = currentTime
           // 拖动后播放
           if(!this.playing) {
             this.togglePlaying()
           }
+          if(this.currentLyric) {
+            this.currentLyric.seek(currentTime * 1000)
+          }
         },
+        // 改变播放模式
         changeMode() {
           const mode = (this.mode + 1) % 3
           // 利用类似函数调用的方式改变state里的mode
@@ -384,7 +400,7 @@
           }
         },
         middleTouchStart(e) {
-          this.touch.initiated = true
+          this.touch.initiated = true // 表示初始化
           const touch = e.touches[0] // 第一次触碰的位置
           this.touch.startX = touch.pageX
           this.touch.startY = touch.pageY
@@ -394,15 +410,50 @@
             return
           }
           const touch = e.touches[0]
-          const deltaX = touch.pageX - this.touch.startX
+          const deltaX = touch.pageX - this.touch.startX // 滑动的距离
           const deltaY = touch.pageY - this.touch.startY
           if(Math.abs(deltaY) > Math.abs(deltaX)) {
             // 纵轴偏移大于横轴偏移，就不处理。
             return
           }
+          const left = this.currentShow === 'cd' ? 0 : -window.innerWidth // 歌词模块停留的位置
+          const offsetWidth = Math.min(0,Math.max(-window.innerWidth, left + deltaX)) // 歌词模块宽度 最小为0，最大为屏幕宽度
+          this.touch.percent = Math.abs(offsetWidth/window.innerWidth)
+          this.$refs.lyricList.$el.style[transform] = `translate3d(${offsetWidth}px,0,0)`
+          this.$refs.lyricList.$el.style[transitionDuration] = 0
+          this.$refs.middleL.style.opacity = 1 - this.touch.percent
+          this.$refs.middleL.style[transitionDuration] = 0
         },
         middleTouchEnd() {
-
+          let offsetWidth
+          let opacity
+          // 从右往左滑
+          if(this.currentShow === 'cd') {
+            // 如果偏移10%，就做处理
+            if(this.touch.percent > 0.1) {
+              offsetWidth = -window.innerWidth
+              opacity = 0
+              this.currentShow = 'lyric'
+            } else {
+              offsetWidth = 0
+              opacity = 1
+            }
+          } else {
+            // 从左往右滑
+            if(this.touch.percent < 0.9) {
+              offsetWidth = 0
+              opacity = 1
+              this.currentShow = 'cd'
+            } else {
+               offsetWidth = -window.innerWidth
+               opacity = 0
+            }
+          }
+          const time = 300
+          this.$refs.lyricList.$el.style[transform] = `translate3d(${offsetWidth}px,0,0)`
+          this.$refs.lyricList.$el.style[transitionDuration] = `${time}ms`
+          this.$refs.middleL.style.opacity = opacity
+          this.$refs.middleL.style[transitionDuration] = `${time}ms`
         }
       }
     }
