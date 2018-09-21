@@ -13,7 +13,10 @@ export const mode = state => state.mode
 
 export const currentIndex = state => state.currentIndex
 
+
 // 通过currentIndex 和 playlist 计算得到当前播放音乐
 export const currentSong = (state) => {
     return state.playlist[state.currentIndex] || {}
 }
+
+export const disc = state => state.disc

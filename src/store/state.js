@@ -1,4 +1,4 @@
-import {playMode} from '../common/js/config'
+import { playMode } from '../common/js/config'
 
 // 定义需要传递的原始数据
 const state = {
@@ -8,7 +8,8 @@ const state = {
     playlist: [], // 播放列表
     sequenceList: [], //顺序播放列表
     mode: playMode.sequence,
-    currentIndex: -1 // 当前播放索引
+    currentIndex: -1, // 当前播放索引
+    disc: {}
 }
 
 export default state

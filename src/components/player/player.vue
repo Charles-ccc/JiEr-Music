@@ -27,6 +27,9 @@
                   <img class="image" :src="currentSong.image">
                 </div>
               </div>
+              <div class="playing-lyric-wrapper">
+                <div class="playing-lyric">{{playingLyric}}</div>
+              </div>
             </div>
             <scroll class="middle-r" ref="lyricList" :data="currentLyric && currentLyric.lines">
               <div class="lyric-wrapper">
@@ -124,7 +127,8 @@
           radius: 32,
           currentLyric: null,
           currentLineNum:0,
-          currentShow: 'cd'
+          currentShow: 'cd',
+          playingLyric: ''
         }
       },
       components: {
@@ -178,10 +182,10 @@
           if(this.currentLyric) {
             this.currentLyric.stop()
           }
-          this.$nextTick(() => {
+          setTimeout(() => { // 将$nextTick 替换为setTimeout 为了避免后台切换到前台后不播放的问题
             this.$refs.audio.play()
             this.getLyric()
-          })
+          }, 1000)
         },
         playing(newPlaying) {
           const audio = this.$refs.audio
@@ -279,14 +283,18 @@
           if(!this.songReady) {
             return
           }
-          let index = this.currentIndex - 1
-          if(index === -1) {
-            index = this.playlist.length -1
-          }
-          this.setCurrentIndex(index)
-          // 当暂停之后切换再播放，播放icon要同步
-          if(!this.playing) {
-            this.togglePlaying()
+          if(this.playlist.length === 1) { // 处理播放列表长度为1的情况
+            this.loop()
+          }else {
+            let index = this.currentIndex - 1
+            if(index === -1) {
+              index = this.playlist.length -1
+            }
+            this.setCurrentIndex(index)
+            // 当暂停之后切换再播放，播放icon要同步
+            if(!this.playing) {
+              this.togglePlaying()
+            }
           }
           this.songReady = false
         },
@@ -294,13 +302,17 @@
           if(!this.songReady) {
             return
           }
-          let index = this.currentIndex + 1
-          if(index === this.playlist.length) {
-            index = 0
-          }
-          this.setCurrentIndex(index)
-          if(!this.playing) {
-            this.togglePlaying()
+          if(this.playlist.length === 1) {
+            this.loop()
+          }else {
+            let index = this.currentIndex + 1
+            if(index === this.playlist.length) {
+              index = 0
+            }
+            this.setCurrentIndex(index)
+            if(!this.playing) {
+              this.togglePlaying()
+            }
           }
           this.songReady = false
         },
@@ -387,6 +399,10 @@
                 this.currentLyric.play() // lyric-parser插件的api方法
               }
               // console.log(this.currentLyric.lines)
+          }).catch(() => {
+            this.currentLyric = null
+            this.playingLyric = ''
+            this.currentLineNum = 0
           })
         },
         // 当每一行歌词发生改变的时候，进行回调
@@ -398,6 +414,7 @@
           } else {
             this.$refs.lyricList.scrollTo(0,0,1000)
           }
+          this.playingLyric = txt // 展示当前播放的歌词
         },
         middleTouchStart(e) {
           this.touch.initiated = true // 表示初始化

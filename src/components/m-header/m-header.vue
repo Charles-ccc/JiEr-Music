@@ -40,8 +40,3 @@
             color: $color-theme
 </style>
 
-<script>
-export default {
-  
-}
-</script>
