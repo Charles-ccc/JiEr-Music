@@ -1,6 +1,6 @@
 <template>
     <transition name="slide">
-        <music-list :title="title" :bgImage="bgImage"></music-list>
+        <music-list :title="title" :bgImage="bgImage" :songs="songs"></music-list>
     </transition>
 </template>
 
@@ -10,6 +10,11 @@
     import {getSongList} from '../../api/recommend'
     import {ERR_OK} from '../../api/config'
     export default {
+        data() {
+            return {
+                songs: []
+            }
+        },
         components: {
             MusicList
         },
@@ -29,7 +34,7 @@
         },
         methods: {
             _getSongList() {
-                getSongList(this.disc.disssid)
+                getSongList(this.disc.dissid)
                 .then((res) => {
                     if(res.code === ERR_OK) {
                         console.log(res.cdlist[0].songlist)

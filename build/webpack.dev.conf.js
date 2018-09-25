@@ -128,7 +128,16 @@ const devWebpackConfig = merge(baseWebpackConfig, {
                     },
                     params: req.query
                 }).then((response) => {
-                    res.json(response.data);
+                    var ret = response.data
+                    // 返回的是JSONP格式的话
+                    if (typeof ret === 'string') {
+                        var reg = /^\w+\(({.+})\)$/
+                        var matches = ret.match(reg)
+                        if (matches) {
+                            ret = JSON.parse(matches[1])
+                        }
+                    }
+                    res.json(ret)
                 }).catch((e) => {
                     console.log(e);
                 });

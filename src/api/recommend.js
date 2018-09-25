@@ -36,11 +36,11 @@ export function getDiscList() {
     })
 }
 
-export function getSongList(dissid) {
+export function getSongList(disstid) {
     const url = '/api/recommendList'
 
     const data = Object.assign({}, commonParams, {
-        dissid,
+        disstid,
         tyoe: 1,
         json: 1,
         utf8: 1,
@@ -48,7 +48,11 @@ export function getSongList(dissid) {
         platform: 'yqq',
         hostUin: 0,
         needNewCode: 0,
-        g_tk: 5381
+        g_tk: 564770981
     })
-    return jsonp(url, data, options)
+    return axios.get(url, {
+        params: data
+    }).then(res => {
+        return Promise.resolve(res.data)
+    })
 }
