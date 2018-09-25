@@ -35,3 +35,20 @@ export function getDiscList() {
         return Promise.resolve(res.data)
     })
 }
+
+export function getSongList(dissid) {
+    const url = '/api/recommendList'
+
+    const data = Object.assign({}, commonParams, {
+        dissid,
+        tyoe: 1,
+        json: 1,
+        utf8: 1,
+        onlysong: 0,
+        platform: 'yqq',
+        hostUin: 0,
+        needNewCode: 0,
+        g_tk: 5381
+    })
+    return jsonp(url, data, options)
+}

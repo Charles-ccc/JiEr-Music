@@ -94,7 +94,33 @@ const devWebpackConfig = merge(baseWebpackConfig, {
                 })
                 // 歌词
             app.get('/api/lyric', function(req, res) {
-                const url = 'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg';
+                    const url = 'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg';
+                    axios.get(url, {
+                        headers: {
+                            referer: 'https://c.y.qq.com/',
+                            host: 'c.y.qq.com'
+                        },
+                        params: req.query
+                    }).then((response) => {
+                        var ret = response.data
+                        if (typeof ret === 'string') {
+                            var reg = /^\w+\(({[^()]+})\)$/ // 匹配jsonp callback正则
+                                /*
+                                "MusicJsonCallback({\"retcode\":0,\"code\":0,\"subcode\":0,\"lyric\":\"W3RpOueugOWNleeIsV0KW2FyOuWRqOadsOS8pl0KW2FsOuiMg+eJueilv10KW2J5Ol0KW29mZnNldDowXQpbMDA6MDAuMDFd566A5Y2V54ixIC0g5ZGo5p2w5LymIChKYXkgQ2hvdSkKWzAwOjAwLjAyXeivje+8muW\",\"trans\":\"\"})"
+                                */
+                            var matches = ret.match(reg)
+                            if (matches) {
+                                ret = JSON.parse(matches[1]) // matches是数组，第一个是整个的字符串，第二个才是匹配的内容
+                            }
+                        }
+                        res.json(ret);
+                    }).catch((e) => {
+                        console.log(e);
+                    });
+                })
+                //获取推荐歌单数据
+            app.get('/api/recommendList', function(req, res) {
+                const url = 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg';
                 axios.get(url, {
                     headers: {
                         referer: 'https://c.y.qq.com/',
@@ -102,18 +128,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
                     },
                     params: req.query
                 }).then((response) => {
-                    var ret = response.data
-                    if (typeof ret === 'string') {
-                        var reg = /^\w+\(({[^()]+})\)$/ // 匹配jsonp callback正则
-                            /*
-                            "MusicJsonCallback({\"retcode\":0,\"code\":0,\"subcode\":0,\"lyric\":\"W3RpOueugOWNleeIsV0KW2FyOuWRqOadsOS8pl0KW2FsOuiMg+eJueilv10KW2J5Ol0KW29mZnNldDowXQpbMDA6MDAuMDFd566A5Y2V54ixIC0g5ZGo5p2w5LymIChKYXkgQ2hvdSkKWzAwOjAwLjAyXeivje+8muW\",\"trans\":\"\"})"
-                            */
-                        var matches = ret.match(reg)
-                        if (matches) {
-                            ret = JSON.parse(matches[1]) // matches是数组，第一个是整个的字符串，第二个才是匹配的内容
-                        }
-                    }
-                    res.json(ret);
+                    res.json(response.data);
                 }).catch((e) => {
                     console.log(e);
                 });
