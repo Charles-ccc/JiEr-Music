@@ -129,7 +129,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
                     params: req.query
                 }).then((response) => {
                     var ret = response.data
-                    // 返回的是JSONP格式的话
+                        // 返回的是JSONP格式的话
                     if (typeof ret === 'string') {
                         var reg = /^\w+\(({.+})\)$/
                         var matches = ret.match(reg)
