@@ -11,3 +11,17 @@ export function getTopList() {
     })
     return jsonp(url, data, options)
 }
+
+export function getMusicList(topid) {
+    const url = 'https://c.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg'
+
+    const data = Object.assign({}, commonParams, {
+        topid,
+        platform: 'h5',
+        needNewCode: 1,
+        g_tk: 5381,
+        type: 'top',
+        page: 'detail'
+    })
+    return jsonp(url, data, options)
+}

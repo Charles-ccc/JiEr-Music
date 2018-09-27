@@ -9,7 +9,9 @@ const state = {
     sequenceList: [], //顺序播放列表
     mode: playMode.sequence,
     currentIndex: -1, // 当前播放索引
-    disc: {}
+    disc: {}, // 推荐歌单
+    topList: {} // 排行详情 
+
 }
 
 export default state
