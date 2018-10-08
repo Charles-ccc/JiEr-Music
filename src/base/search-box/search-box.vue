@@ -19,8 +19,13 @@
                 query: ''
             }
         },
-        clear() {
-            this.query = ''
+        methods: {
+            clear() {
+                this.query = ''
+            },
+            setQuery(query) {
+                this.query = query
+            }
         },
         created () {
             // 需要把query给暴露出去
